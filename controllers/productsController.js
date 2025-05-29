@@ -9,12 +9,11 @@ class productsController{
                 res.status(400).send("You don't have any products!");
                 return ;
             }
-            console.log(data);
             res.status(203).json(data);
         }
         catch (e) {
-            res.status(501).send('Server is brake!');
             console.log(e)
+            res.status(501).send('Server is brake!');
         }
     }
     async getProducts(req,res){

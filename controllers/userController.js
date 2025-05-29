@@ -2,6 +2,7 @@ const transporter = require('../service/mailer');
 const db = require('../service/db');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+require('dotenv').config();
 
 class UserController{
     async getUser(req,res){
@@ -15,6 +16,16 @@ class UserController{
             res.status(502).send(e.message);
         }
 
+    }
+    async changePassword(req,res){
+        try{
+            const {uid,password} = req.body;
+            const hashPassword = await bcrypt.hash(password,6);
+            const response = await db.query('UPDATE users SET password=$1 WHERE uid=$2',[hashPassword,password]);
+            res.status(210).send('<script>window.location.replace(`http://${process.env.HOST}/`)</script>');
+        }catch (e) {
+            res.status(501).send(e.message);
+        }
     }
     async register(req,res){
         try{
