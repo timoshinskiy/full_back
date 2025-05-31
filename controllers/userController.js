@@ -62,6 +62,9 @@ class UserController{
         try{
             const {email} = req.body;
             const response = await db.query('SELECT * FROM users WHERE email=$1',[email]);
+            if(!response.rows[0]){
+                res.status(400).send("Email is not valid");
+            }
             const uid = response.rows[0].uid;
             const message = {
                 from: process.env.MAIL_USER,
@@ -69,10 +72,10 @@ class UserController{
                 subject: 'Approve your email at server account',
                 text: '',
                 html:
-                    `<h1>To approve your account you need to click the button</h1><a href="http://localhost:8000/auth/approve/${uid}"><button>Approve</button></a>`
+                    `<h1>To approve your account you need to click the button</h1><a href="http://${process.env.HOST}${":"+process.env.PORT}/auth/approve/${uid}"><button>Approve</button></a>`
             }
-            const result = await transporter.sendMail({...message});
-            res.status(202).send('success');
+            await transporter.sendMail({...message});
+            res.status(202).send('Check your mail address and approve!');
         }
         catch (e) {
             res.status(501).send('Server is broken!');
@@ -84,7 +87,10 @@ class UserController{
         try{
             const {uid} = req.params;
             const response = await db.query('UPDATE users SET email_verified=true WHERE uid=$1',[uid]);
-            res.status(200).send('<script>window.location.replace(\'http://localhost:5173/\');</script>');
+            res.status(200).send('<script>' +
+                'window.location.replace(\'http://localhost:5173/\');' +
+                'localStorage.removeItem("auth")'+
+                '</script>');
         }
         catch (e) {
             console.log(e);
